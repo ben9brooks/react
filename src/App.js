@@ -1,26 +1,36 @@
 import './App.css';
-import { useRef } from 'react';
+import { useState, useEffect } from 'react';
+
+function GitHubUser( {name, public_repos, avatar} ){
+  return(
+    <div>
+      <h1>{name}</h1>
+      <p>Repos: {public_repos}</p>
+      <img src={avatar} height={50} alt="pfp"/>
+    </div>
+  )
+}
 
 function App() {
-  const txtTitle = useRef();
-  const hexColor = useRef();
-  console.log(txtTitle);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(null);
 
-  const submit = (e) => {
-    e.preventDefault();
-    const title = txtTitle.current.value;
-    const color = hexColor.current.value;
-    alert(`${title}, ${color}`)
-    txtTitle.current.value = "";
-    hexColor.current.value = "";
-  };
+  useEffect(() => {
+    setLoading(true);
+    fetch(`https://api.github.com/users/ben9brooks`)
+    .then(response => response.json())
+    .then(setData)
+    .then(() => setLoading(false))
+    .catch(setError);
+  }, []);
 
-  return (
-    <form onSubmit={submit}>
-      <input ref={txtTitle} type="text" placeholder="color title..."/>
-      <input ref={hexColor} type="color"/>
-      <button>Add</button>
-    </form>
+  if(loading) return <h1>Loading...</h1>
+  if(error) return <pre>{JSON.stringify(error)}</pre>
+  if(!data) return null;
+
+   return (
+    <GitHubUser name={data.name} public_repos={data.public_repos} avatar={data.avatar_url} />
   );
 }
 
